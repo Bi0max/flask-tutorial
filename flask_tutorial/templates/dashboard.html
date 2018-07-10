@@ -1,0 +1,41 @@
+{% extends "header.html" %}
+
+{% block body %}
+
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        {% set first_list_element = True %}
+        {% for topic in TOPIC_DICT %}
+            {% if first_list_element %}
+                {% set a_active = " active" %}
+                {% set aria_selected = "true" %}
+                {% set first_list_element = False %}
+            {% else %}
+                {% set a_active = "" %}
+                {% set aria_selected = "false" %}
+            {% endif %}
+            <li class="nav-item">
+                <a class={{ "nav-link" + a_active }} id="home-tab" data-toggle="tab" href={{ "#" + topic }} role="tab"
+                   aria-controls={{ topic }} aria-selected={{ aria_selected }}>{{ topic }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        {% set first_list_element = True %}
+        {% for topic in TOPIC_DICT %}
+            {% if first_list_element %}
+                {% set div_class = "tab-pane fade show active" %}
+                {% set first_list_element = False %}
+            {% else %}
+                {% set div_class = "tab-pane fade" %}
+            {% endif %}
+            <div class={{ div_class }} id={{ topic }} role="tabpanel" aria-labelledby={{ topic + "-tab" }}>
+                <ul>
+                    {% for subtopic in TOPIC_DICT[topic] %}
+                        <li><a href={{ subtopic[1] }}>{{ subtopic[0] }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
+    </div>
+
+{% endblock %}
