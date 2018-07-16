@@ -1,4 +1,5 @@
 import gc
+from functools import wraps
 
 from flask import Flask, render_template, flash, request, url_for, redirect, session, g
 from passlib.hash import sha256_crypt
@@ -44,22 +45,47 @@ def errorboard():
         return render_template('500.html', error=e)
 
 
+def login_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        logged_in = session.get('logged_in', False)
+        if logged_in:
+            return f(*args, **kwargs)
+        else:
+            flash("You need to login first.")
+            return redirect(url_for('login_page'))
+    return wrapper
+
+
+@app.route('/logout/')
+@login_required
+def logout_page():
+    session.clear()
+    flash("You have been logged out.")
+    gc.collect()
+    return redirect(url_for('homepage'))
+
+
 @app.route('/login/', methods=['GET', 'POST'])
 def login_page():
     try:
+        c, conn = connection()
+        error = ''
         if request.method == "POST":
             attempted_username = request.form['username']
-            attempted_password = request.form['password']
+            c.execute("SELECT * FROM users WHERE username=?", (attempted_username,))
+            user_data = c.fetchone()
+            if user_data is not None:
+                hashed_password = user_data[2]
+                if sha256_crypt.verify(request.form['password'], hashed_password):
+                    session['logged_in'] = True
+                    session['username'] = attempted_username
+                    flash("You are now logged in.")
+                    return redirect(url_for('dashboard'))
+            error = "Invalid credentials. Try again."
+            gc.collect()
+        return render_template("login.html", error=error)
 
-            # flash(attempted_username)
-            # flash(attempted_password)
-
-            if attempted_username == 'admin' and attempted_password == 'pass':
-                return redirect(url_for('dashboard'))
-            else:
-                error = "Invalid credentials. Try again."
-                return render_template('login.html', error=error)
-        return render_template('login.html')
     except Exception as e:
         return render_template('login.html', error=e)
 
@@ -77,29 +103,29 @@ class RegistrationForm(Form):
 
 @app.route('/register/', methods=['GET', 'POST'])
 def register_page():
-        form = RegistrationForm(request.form)
-        if request.method == "POST" and form.validate():
-            username = form.username.data
-            email = form.email.data
-            password = sha256_crypt.encrypt((str(form.password.data)))
-            c, conn = connection()
-            c.execute("SELECT * FROM users WHERE username=?", (username,))
-            if len(c.fetchall()) > 0:
-                flash("That username is already taken.")
-                return render_template("register.html", form=form)
-            else:
-                c.execute("INSERT INTO users (username, password, email, tracking) VALUES (?, ?, ?, ?)",
-                          (username, password, email, "/introduction-to-python-programming/"))
-                conn.commit()
-                flash("Thanks for registering!")
-                c.close()
-                conn.close()
-                gc.collect()
+    form = RegistrationForm(request.form)
+    if request.method == "POST" and form.validate():
+        username = form.username.data
+        email = form.email.data
+        password = sha256_crypt.encrypt((str(form.password.data)))
+        c, conn = connection()
+        c.execute("SELECT * FROM users WHERE username=?", (username,))
+        if len(c.fetchall()) > 0:
+            flash("That username is already taken.")
+            return render_template("register.html", form=form)
+        else:
+            c.execute("INSERT INTO users (username, password, email, tracking) VALUES (?, ?, ?, ?)",
+                      (username, password, email, "/introduction-to-python-programming/"))
+            conn.commit()
+            flash("Thanks for registering!")
+            c.close()
+            conn.close()
+            gc.collect()
 
-                session['logged_in'] = True
-                session['username'] = username
-                return redirect(url_for("dashboard"))
-        return render_template("register.html", form=form)
+            session['logged_in'] = True
+            session['username'] = username
+            return redirect(url_for("dashboard"))
+    return render_template("register.html", form=form)
 
 
 

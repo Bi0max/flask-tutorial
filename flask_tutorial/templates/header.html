@@ -28,13 +28,19 @@
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item" style="margin-top: -7px;">
                     <!-- Button trigger modal -->
-                    <a role="presentation" class="text-dark" href="/login/"
-                       style="margin-right: 10px; border-right: 1px dashed #333;">
-                        Login
-                    </a>
-                    <a role="presentation" class="text-dark" href="/register/">
-                        Join the Dark Side
-                    </a>
+                    {% if session.get('logged_in', False) %}
+                        <a role="presentation" class="text-dark" href="/logout/">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a role="presentation" class="text-dark" href="/login/"
+                           style="margin-right: 10px; border-right: 1px dashed #333;">
+                            Login
+                        </a>
+                        <a role="presentation" class="text-dark" href="/register/">
+                            Join the Dark Side
+                        </a>
+                    {% endif %}
                 </li>
             </ul>
         </div>
