@@ -10,10 +10,44 @@ from flask_tutorial.content_management import content
 from flask_tutorial.db_connect import connection
 from string import Template
 
+from flask_mail import Mail, Message
+
 TOPIC_DICT = content()
 
+
 app = Flask(__name__)
+app.config.update(
+    DEBUG=True,
+    # EMAIL SETTINGS
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=465,
+    MAIL_USE_SSL=True,
+    MAIL_USERNAME='your@gmail.com',
+    MAIL_PASSWORD='yourpassword'
+)
+mail = Mail(app)
+
 app.secret_key = 'my unobvious secret key'
+
+
+@app.route('/send-mail/')
+def send_mail():
+    try:
+        email_addr = ""
+        username = ""
+        link = ""
+
+        msg = Message("Forgot Password - PythonProgramming.net",
+                      sender="pythonprogrammingnet@gmail.com",
+                      recipients=[email_addr])
+        msg.body = 'Hello ' + username + ',\nYou or someone else has requested that a new ' \
+                                         'password be generated for your account. If you made t' \
+                                         'his request, then please follow this link:' + link
+        msg.html = render_template('/mails/reset-password.html', username=username, link=link)
+
+        mail.send(msg)
+    except Exception as e:
+        return str(e)
 
 
 @app.route('/')
