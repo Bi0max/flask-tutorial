@@ -179,5 +179,31 @@ def robots():
 #
 
 
+@app.route('/include_example/')
+def include_example():
+    try:
+        # normally, should come from database
+        replies = {'Jack': 'Cool post',
+                   'Jane': '+1',
+                   'Erika': 'Most definitely',
+                   'Bob': 'wow',
+                   'Carl': 'amazing!', }
+        return render_template('include_tutorial.html', replies=replies)
+    except Exception as e:
+        return str(e)
+
+
+@app.route('/jinjaman/')
+def jinjaman():
+    try:
+        data = [15, '15', 'Python is good', 'Python, Java, php, SQL, C++', '<p><strong>Hey there!</strong></p>']
+        return render_template("jinja_templating.html", data=data)
+
+    except Exception as e:
+        return str(e)
+
+
+
+
 if __name__ == '__main__':
     app.run()

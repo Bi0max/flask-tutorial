@@ -1,0 +1,50 @@
+{% extends "header.html" %}
+
+{% block body %}
+<body class="body">
+    <div class="container">
+        {% for d in data %}
+            <p>{{ d }}</p>
+        {% endfor %}
+        <hr>
+
+        {% if data[1]|int > 10 %}
+            <p>True!</p>
+        {% endif %}
+
+        {{ data[2]|replace('good', 'FREAKING AWESOME!') }}
+        {{ data[2].replace('good', 'FREAKING AWESOME!') }}
+        <p>Both works
+        <hr>
+        <ul>
+        {% for lang in data[3].split(',') %}
+            <li>lang - {{ lang }}</li>
+        {% endfor %}
+        </ul>
+        <hr>
+        {{ data[4]|safe }}
+        <hr>
+
+        {% macro input(name, value='', type='text', size=20) -%}
+			<input type="{{ type }}" name="{{ name }}" value="{{
+				value|e }}" size="{{ size }}">
+		{%- endmacro %}
+
+		The macro can then be called like a function in the namespace:
+
+		<p>{{ input('username') }}</p>
+		<p>{{ input('password', type='password') }}</p>
+
+        <hr>
+
+        <p>If you want to show raw Jinja code.</p>
+        {% raw %}
+            {% for item in seq %}
+                {{ item }}
+            {% endfor %}
+        {% endraw %}
+
+    </div>
+</body>
+
+{% endblock %}
