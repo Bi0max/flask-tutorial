@@ -17,7 +17,8 @@ app.secret_key = 'my unobvious secret key'
 
 
 @app.route('/')
-def homepage():
+@app.route('/<path:urlpath>/')
+def homepage(urlpath='/'):
     return render_template('main.html')
 
 
@@ -203,6 +204,18 @@ def jinjaman():
         return str(e)
 
 
+@app.route('/converters/')
+# restrict the type of <page>:
+# @app.route('/converters/<int:page>/')
+# the whole path after "/converters/"
+# @app.route('/converters/<path:page>/')
+# several variables:
+@app.route('/converters/<string:thread>/<int:page>/')
+def converter_example(thread, page=1):
+    try:
+        return render_template("converter_example.html", page=page, thread=thread)
+    except Exception as e:
+        return str(e)
 
 
 if __name__ == '__main__':
