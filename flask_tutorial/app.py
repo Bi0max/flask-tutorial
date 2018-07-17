@@ -1,7 +1,8 @@
 import gc
+from datetime import datetime, timedelta
 from functools import wraps
 
-from flask import Flask, render_template, flash, request, url_for, redirect, session, g
+from flask import Flask, render_template, flash, request, url_for, redirect, session, g, make_response
 from passlib.hash import sha256_crypt
 from wtforms import Form, StringField, PasswordField, validators, BooleanField
 
@@ -143,6 +144,39 @@ def register_page():
     return render_template("register.html", form=form)
 
 
+@app.route('/sitemap.xml', methods=['GET'])
+def sitemap():
+    try:
+        """Generate sitemap.xml. Makes a list of urls and date modified."""
+        pages = []
+        ten_days_ago = (datetime.now() - timedelta(days=7)).date().isoformat()
+        # static pages
+        for rule in app.url_map.iter_rules():
+            if "GET" in rule.methods and len(rule.arguments) == 0:
+                pages.append(
+                    ["http://pythonprogramming.net" + str(rule.rule), ten_days_ago]
+                )
+        print(pages)
+        sitemap_xml = render_template('sitemap_template.xml', pages=pages)
+        response = make_response(sitemap_xml)
+        response.headers["Content-Type"] = "application/xml"
+
+        return response
+    except Exception as e:
+        return (str(e))
+
+
+# LIVE VERSION
+@app.route('/robots.txt/')
+def robots():
+    return("User-agent: *\nDisallow: /register/\nDisallow: /login/\nDisallow: /donation-success/")
+
+
+# DEV VERSION - disallow everything
+# @app.route('/robots.txt/')
+# def robots():
+#     return("User-agent: *\nDisallow: /")
+#
 
 
 if __name__ == '__main__':
