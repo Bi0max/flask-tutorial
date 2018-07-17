@@ -7,6 +7,7 @@ from wtforms import Form, StringField, PasswordField, validators, BooleanField
 
 from flask_tutorial.content_management import content
 from flask_tutorial.db_connect import connection
+from string import Template
 
 TOPIC_DICT = content()
 
@@ -43,6 +44,20 @@ def errorboard():
         return render_template('dashboard.html', TOPIC_DICT=TOPIC_DICT)
     except Exception as e:
         return render_template('500.html', error=e)
+
+
+HTML_TEMPLATE = Template("""
+<h1>Hello ${place_name}!</h1>
+
+<img src="https://maps.googleapis.com/maps/api/staticmap?size=700x300&markers=${place_name}" alt="map of ${place_name}">
+
+<img src="https://maps.googleapis.com/maps/api/streetview?size=700x300&location=${place_name}" alt="street view of ${place_name}">
+""")
+
+
+@app.route('/<some_place>')
+def some_place_page(some_place):
+    return(HTML_TEMPLATE.substitute(place_name=some_place))
 
 
 def login_required(f):
