@@ -2,7 +2,7 @@ import gc
 from datetime import datetime, timedelta
 from functools import wraps
 
-from flask import Flask, render_template, flash, request, url_for, redirect, session, g, make_response
+from flask import Flask, render_template, flash, request, url_for, redirect, session, g, make_response, send_file
 from passlib.hash import sha256_crypt
 from wtforms import Form, StringField, PasswordField, validators, BooleanField
 
@@ -250,6 +250,17 @@ def converter_example(thread, page=1):
         return render_template("converter_example.html", page=page, thread=thread)
     except Exception as e:
         return str(e)
+
+
+@app.route('/file_downloads/')
+def file_downloads():
+    return render_template('downloads.html')
+
+
+@app.route('/return_file/')
+def return_file():
+    return send_file("/home/bi0max/projects/tutorials/flask_tutorial/flask_tutorial/static/images/darth.jpeg",
+                     attachment_filename='darth.jpg')
 
 
 if __name__ == '__main__':
