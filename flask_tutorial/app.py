@@ -1,8 +1,10 @@
 import gc
+import os
 from datetime import datetime, timedelta
 from functools import wraps
 
-from flask import Flask, render_template, flash, request, url_for, redirect, session, g, make_response, send_file
+from flask import Flask, render_template, flash, request, url_for, redirect, session, g, make_response, send_file, \
+    send_from_directory
 from passlib.hash import sha256_crypt
 from wtforms import Form, StringField, PasswordField, validators, BooleanField
 
@@ -15,7 +17,7 @@ from flask_mail import Mail, Message
 TOPIC_DICT = content()
 
 
-app = Flask(__name__)
+app = Flask(__name__, instance_path="/home/bi0max/projects/tutorials/flask_tutorial/flask_tutorial/instance")
 app.config.update(
     DEBUG=True,
     # EMAIL SETTINGS
@@ -261,6 +263,26 @@ def file_downloads():
 def return_file():
     return send_file("/home/bi0max/projects/tutorials/flask_tutorial/flask_tutorial/static/images/darth.jpeg",
                      attachment_filename='darth.jpg')
+
+
+def special_requirement(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if 'Maksim' == session['username']:
+            return f(*args, **kwargs)
+        else:
+            flash("You are not Maksim.")
+            return redirect(url_for('dashboard'))
+    return wrapper
+
+
+@app.route('/protected/<path:filename>')
+@special_requirement
+def protected(filename):
+    try:
+        return send_from_directory(os.path.join(app.instance_path, ''), filename)
+    except Exception as e:
+        return str(e)
 
 
 if __name__ == '__main__':
