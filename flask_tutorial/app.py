@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 from flask import Flask, render_template, flash, request, url_for, redirect, session, g, make_response, send_file, \
-    send_from_directory
+    send_from_directory, jsonify
 from passlib.hash import sha256_crypt
 from wtforms import Form, StringField, PasswordField, validators, BooleanField
 
@@ -281,6 +281,23 @@ def special_requirement(f):
 def protected(filename):
     try:
         return send_from_directory(os.path.join(app.instance_path, ''), filename)
+    except Exception as e:
+        return str(e)
+
+
+@app.route('/interactive/')
+def interactive():
+    return render_template('interactive.html')
+
+
+@app.route('/background_process/')
+def background_process():
+    try:
+        lang = request.args.get('proglang', 0, type=str)
+        if str(lang).lower() == 'python':
+            return jsonify(result='You are wise!')
+        else:
+            return jsonify(result='Try again')
     except Exception as e:
         return str(e)
 
